@@ -1,0 +1,37 @@
+name: Hello Actions
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  first:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: What started me
+        run: |
+          echo "event: ${{ github.event_name }}"
+          echo "ref:   ${{ github.ref }}"
+          echo "actor: ${{ github.actor }}"
+          echo "files on this machine:"
+          ls -la
+      - name: Leave a file behind
+        run: echo "hello from step 2" > note.txt
+      - name: A later step can see it
+        run: cat note.txt
+
+  second:
+    runs-on: ubuntu-latest
+    steps:
+      - name: A different job, a different machine
+        run: |
+          ls -la
+          cat note.txt || echo "no note.txt here - jobs don't share files"
+
+  third:
+    needs: first
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "I only start after 'first' finishes"
